@@ -1,0 +1,169 @@
+
+
+Teddy toro- Code 
+
+    .thumb                      
+    .align 2
+    .global  StarterChooseHook
+@------------------------------------------------------------------------------
+@ StarterChooseHook
+@ Custom routine that replaces Charmander with Teddy Toro (CSUDH mascot)
+@------------------------------------------------------------------------------
+StarterChooseHook:
+    push    {r0-r3, lr}         @ Save registers we’ll use
+   ldr     r0, =gChosenStarter @ 0 = first starter slot
+    ldrb    r1, [r0]            @ r1 = index of starter selected (0..2)
+  ldr     r2, =StarterSpeciesTable
+    add     r2, r2, r1          @ r2 = &StarterSpeciesTable[index]
+    ldrb    r3, [r2]            @ r3 = original species id
+    cmp     r3, #0x04           @ 0x04 = Charmander in base ROM
+    bne     UseOriginal         @ if not Charmander, keep original species
+
+    @ Replace Charmander with Teddy Toro (custom species 0xE5)
+    mov     r3, #0xE5           @ 0xE5 = SPECIES_TEDDY_TORO
+    strb    r3, [r2]            @ write back into starter table
+UseOriginal:
+    @ Continue with normal starter creation
+    ldr     r0, =CreateStarterMon
+    blx     r0                  @ call original function
+
+    pop     {r0-r3, pc}         @ Restore registers & return
+
+
+
+CSUN matador  code :
+
+    .equ SPECIES_MATADOR, 0x00F0    @ custom species index for Matador
+
+    .align 2
+MatadorBaseStats:
+    .byte 75     @ base HP
+    .byte 90     @ base Attack
+    .byte 70     @ base Defense
+    .byte 65     @ base Speed
+    .byte 60     @ base Sp. Attack
+    .byte 70     @ base Sp. Defense
+    .byte 1      @ type 1 = Fighting (example)
+    .byte 1      @ type 2 = Fighting
+    .word 0      @ catch rate (not important for mascot)
+    .word 105    @ base exp
+    .word 0      @ EV yield
+    .word 0      @ item 1
+    .word 0      @ item 2
+    .byte 0      @ gender (male)
+    .byte 0      @ egg cycles
+    .byte 0      @ friendship
+    .byte 0      @ growth rate
+    .byte 0      @ egg group 1
+    .byte 0      @ egg group 2
+    .byte 0      @ ability 1
+    .byte 0      @ ability 2
+    .byte 0      @ safari flee rate
+    .byte 0      @ color, flip, etc.
+
+@ Simple level-up movepool (just an example)
+MatadorLevelUpMoves:
+    .hword 5, 0x0015   @ Lvl 5: Tackle (placeholder)
+    .hword 8, 0x0021   @ Lvl 8: Focus Energy
+    .hword 12, 0x0032  @ Lvl 12: Karate Chop
+    .hword 0xFFFF      @ terminator
+
+@ PokeDex style text for Matador
+MatadorPokedexText:
+    .string "The CSUN Matador mascot."  @ line 1
+    .byte 0xFE
+    .string "A rival of CSUDH Toro."     @ line 2
+    .byte 0xFF
+
+@ ================================
+@ Hook: make rival use Matador in
+@ the first battle (instead of a
+@ normal Pokémon)
+@ ================================
+    .thumb
+    .align 2
+    .global FirstRivalMatadorHook
+
+FirstRivalMatadorHook:
+    push {r0-r3, lr}
+
+    ldr r0, =0x0202402C        @ pointer to rival party slot 1
+    ldr r1, =SPECIES_MATADOR
+    strh r1, [r0]              @ set species = Matador
+
+    pop {r0-r3, pc}            @ return to original code
+
+
+
+
+
+
+
+
+CSUF Tuffy Code:
+  .equ SPECIES_TITAN, 0x00F1        @ custom species index for CSUF
+
+    .align 2
+CSUFTitanBaseStats:
+    .byte 80      @ base HP
+    .byte 85      @ base Attack
+    .byte 80      @ base Defense
+    .byte 50      @ base Speed
+    .byte 65      @ base Sp. Attack
+    .byte 75      @ base Sp. Defense
+    .byte 2       @ type 1 = Normal (example)
+    .byte 2       @ type 2 = Normal
+    .word 45      @ catch rate (can be encountered)
+    .word 120     @ base exp
+    .word 0       @ EV yield
+    .word 0       @ item 1
+    .word 0       @ item 2
+    .byte 0       @ gender
+    .byte 0       @ egg cycles
+    .byte 70      @ friendship
+    .byte 0       @ growth rate
+    .byte 0       @ egg group 1
+    .byte 0       @ egg group 2
+    .byte 0       @ ability 1
+    .byte 0       @ ability 2
+    .byte 0       @ safari flee rate
+    .byte 0       @ color, flip, etc.
+
+@ Simple level-up movepool for Tuffy
+CSUFTitanLevelUpMoves:
+    .hword 3,  0x0015   @ Lvl 3: Tackle (placeholder)
+    .hword 6,  0x0028   @ Lvl 6: Tail Whip
+    .hword 10, 0x0034   @ Lvl 10: Headbutt
+    .hword 0xFFFF       @ terminator
+
+@ Pokédex-style text for CSUF Titan
+CSUFTitanPokedexText:
+    .string "Tuffy, the CSU Fullerton"  @ line 1
+    .byte 0xFE
+    .string "Titan mascot. A fierce"    @ line 2
+    .byte 0xFE
+    .string "rival of Teddy Toro."      @ line 3
+    .byte 0xFF
+
+@ ==========================================
+@ Hook: allow Tuffy to appear as a wild
+@ encounter on a specific route.
+@ (Address values are illustrative.)
+@ ==========================================
+    .thumb
+    .align 2
+    .global WildCSUFTitanHook
+
+WildCSUFTitanHook:
+    push {r0-r3, lr}
+
+    @ r0 = pointer to wild encounter slot
+    ldr  r0, =0x02025A00          @ sample wild mon slot
+    ldr  r1, =SPECIES_TITAN
+    strh r1, [r0]                 @ species = CSUF Titan
+
+    mov  r2, #3
+    strb r2, [r0, #2]             @ set level = 3 (Lv3 in screenshot)
+
+CSULB Shark cord:
+
